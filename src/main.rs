@@ -29,6 +29,7 @@ fn main() {
     let reader = BufReader::new(file);
 
     let mut braces_count = 0;
+    let mut sq_braces_count = 0;
 
     for line in reader.lines() {
         let line = line.expect("Error reading line");
@@ -36,17 +37,27 @@ fn main() {
         
         braces_count += line.chars().filter(|&c| c == '{').count();
         braces_count -= line.chars().filter(|&c| c == '}').count();
+        sq_braces_count += line.chars().filter(|&c| c == '[').count();
+        sq_braces_count -= line.chars().filter(|&c| c == ']').count();
 
-        println!("braces_count: {braces_count}");
+        let mut pair = line.split(':');
 
-        if braces_count == 0 && !line.is_empty() {
-            // we matched the number of brances so this should be the last iteration
-            println!("line: {line}");
-        }
-    
-    }
+        let key = pair.next();
 
-    if braces_count != 0 {
+        if let Some(key) = key {
+            let cases = vec!["{", "}", "[", "]"];
+            if !cases.contains(&key) {
+                if !key.starts_with('"') {
+                    eprintln!("expecting STRING found: {key}");
+                    exit(1);
+                }
+
+                println!("this is a valid key: {key}");
+            }
+        }    
+    }    
+
+    if braces_count != 0 || sq_braces_count != 0 {
         eprintln!("Json incomplete or malformed!");
         exit(1); 
     }
