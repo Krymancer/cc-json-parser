@@ -1,4 +1,4 @@
-use std::{env, fs, process::exit};
+use std::{env, fs, process::exit, str::FromStr};
 use anyhow::{Result, Context };
 
 #[derive(Debug)]
@@ -60,4 +60,53 @@ fn main() {
 
     let parsed = parse_json(file_path);
     println!("{:#?}", parsed);
+}
+
+#[test]
+fn test_invalid_path() {
+    let path = String::from_str("invalid/path").unwrap();
+    let result = parse_json(path);
+    assert_eq!(result.is_err(), true)
+}
+
+#[test]
+fn test_step1_valid() {
+    let path = String::from_str("./tests/step1/valid.json").unwrap();
+    let result = parse_json(path);
+    assert_eq!(result.is_ok(), true)
+}
+
+#[test]
+fn test_step1_invalid() {
+    let path = String::from_str("./tests/step1/invalid.json").unwrap();
+    let result = parse_json(path);
+    assert_eq!(result.is_err(), true)
+}
+
+#[test]
+fn test_step2_valid() {
+    let path = String::from_str("./tests/step1/valid.json").unwrap();
+    let result = parse_json(path);
+    assert_eq!(result.is_ok(), true)
+}
+
+#[test]
+fn test_step2_invalid() {
+    let path = String::from_str("./tests/step1/invalid.json").unwrap();
+    let result = parse_json(path);
+    assert_eq!(result.is_err(), true)
+}
+
+#[test]
+fn test_step2_valid1() {
+    let path = String::from_str("./tests/step1/valid2.json").unwrap();
+    let result = parse_json(path);
+    assert_eq!(result.is_ok(), true)
+}
+
+#[test]
+fn test_step2_invalid2() {
+    let path = String::from_str("./tests/step1/invalid2.json").unwrap();
+    let result = parse_json(path);
+    assert_eq!(result.is_err(), true)
 }
