@@ -1,7 +1,8 @@
-use std::{env, fs, io, process::exit};
+use std::{env, fs, process::exit};
+use anyhow::{Result, Context };
 
 #[derive(Debug)]
-enum JsonValue {
+pub enum JsonValue {
     Object(Vec<(String, JsonValue)>),
     Array(Vec<JsonValue>),
     String(String),
@@ -27,16 +28,22 @@ enum Token {
 // TODO: Reading a file to memory is not great
 // If the file is too big this cloud crash or be really slow
 // Try a stream or something later!!
-fn read_file(path: String) -> Result<String, std::io::Error> {
-    fs::read_to_string(path)
+fn read_file(path: String) -> Result<String> {
+    fs::read_to_string(path).context("Falied to read File")
 }
 
 fn tokenize(input: String) -> Vec<Token> {
     todo!("Implement tokenization")
 }
 
-fn parse(tokens: &[Token]) -> Result<JsonValue, String> {
+fn parse(tokens: Vec<Token>) -> Result<JsonValue> {
     todo!("Implement parsing")
+}
+
+pub fn parse_json(path: String) -> Result<JsonValue> {
+    let input = read_file(path)?;
+    let tokens = tokenize(input);
+    parse(tokens).context("Falied to parse JSON")
 }
 
 fn main() {
@@ -51,14 +58,6 @@ fn main() {
 
     let file_path = file_path.unwrap();
 
-    match read_file(file_path) {
-        Ok(content) => {
-            let tokens = tokenize(content);
-            match parse(&tokens) {
-                Ok(json_value) => println!("{:#?}", json_value),
-                Err(e) => eprintln!("Fail to parse JSON: {}", e),
-            }
-        },
-        Err(e) => eprintln!("Failed to read file: {}", e),
-    }        
+    let parsed = parse_json(file_path);
+    println!("{:#?}", parsed);
 }
