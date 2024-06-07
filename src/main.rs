@@ -153,7 +153,7 @@ fn tokenize(input: String) -> Vec<Token> {
     tokens
 }
 
-fn parse(_tokens: Vec<Token>) -> Result<JsonValue> {
+fn parse(tokens: Vec<Token>) -> Result<JsonValue> {
     todo!("Implement parsing")
 }
 
