@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use std::{env, fs, process::exit, ptr::null_mut, str::FromStr};
+use std::{env, fs, process::exit};
 
 #[derive(Debug)]
 pub enum JsonValue {
@@ -33,19 +33,71 @@ fn read_file(path: String) -> Result<String> {
 }
 
 fn parse_string(chars: &mut std::iter::Peekable<std::str::Chars>) -> String {
-    todo!("Implement parser for string")
+    let mut result = String::new();
+    chars.next(); // Skip opening (") quote
+
+    while let Some(&ch) = chars.peek() {
+        match ch {
+            '"' => {
+                chars.next(); // Skip closing (") quote
+                break;
+            }
+            _ => {
+                result.push(ch);
+                chars.next();
+            }
+        }
+    }
+
+    result
 }
 
 fn parse_number(chars: &mut std::iter::Peekable<std::str::Chars>) -> f64 {
-    todo!("Implement parser for number")
+    let mut result = String::new();
+
+    while let Some(&ch) = chars.peek() {
+        match ch {
+            '0'..='9' | '.' | '-' => {
+                result.push(ch);
+                chars.next();
+            }
+            _ => break,
+        }
+    }
+
+    result.parse().unwrap() // Assuming valid number input
 }
 
 fn parse_bool(chars: &mut std::iter::Peekable<std::str::Chars>) -> bool {
-    todo!("Implement parser for bool")
+    let mut result = String::new();
+
+    while let Some(&ch) = chars.peek() {
+        match ch {
+            't' | 'r' | 'u' | 'e' | 'f' | 'a' | 'l' | 's' => {
+                result.push(ch);
+                chars.next();
+            }
+            _ => break,
+        }
+    }
+
+    result == "true"
 }
 
 fn parse_null(chars: &mut std::iter::Peekable<std::str::Chars>) {
-    todo!("Implement parser for null")
+    let mut result = String::new();
+
+    while let Some(&ch) = chars.peek() {
+        match ch {
+            'n' | 'u' | 'l' => {
+                result.push(ch);
+                chars.next();
+            }
+            _ => break,
+        }
+    }
+
+    assert_eq!(result, "null");
 }
 
 fn tokenize(input: String) -> Vec<Token> {
@@ -58,7 +110,7 @@ fn tokenize(input: String) -> Vec<Token> {
                 tokens.push(Token::CurlyOpen);
                 chars.next();
             }
-            '{' => {
+            '}' => {
                 tokens.push(Token::CurlyClose);
                 chars.next();
             }
@@ -101,13 +153,14 @@ fn tokenize(input: String) -> Vec<Token> {
     tokens
 }
 
-fn parse(tokens: Vec<Token>) -> Result<JsonValue> {
+fn parse(_tokens: Vec<Token>) -> Result<JsonValue> {
     todo!("Implement parsing")
 }
 
 pub fn parse_json(path: String) -> Result<JsonValue> {
     let input = read_file(path)?;
     let tokens = tokenize(input);
+    println!("{:?}", tokens);
     parse(tokens).context("Falied to parse JSON")
 }
 
@@ -116,7 +169,7 @@ fn main() {
 
     let file_path = args.next();
 
-    if let None = file_path {
+    if file_path.is_none() {
         eprintln!("error: please provide an file!");
         exit(1);
     }
@@ -129,49 +182,49 @@ fn main() {
 
 #[test]
 fn test_invalid_path() {
-    let path = String::from_str("invalid/path").unwrap();
+    let path = String::from("invalid/path");
     let result = parse_json(path);
     assert_eq!(result.is_err(), true)
 }
 
 #[test]
 fn test_step1_valid() {
-    let path = String::from_str("./tests/step1/valid.json").unwrap();
+    let path = String::from("./tests/step1/valid.json");
     let result = parse_json(path);
     assert_eq!(result.is_ok(), true)
 }
 
 #[test]
 fn test_step1_invalid() {
-    let path = String::from_str("./tests/step1/invalid.json").unwrap();
+    let path = String::from("./tests/step1/invalid.json");
     let result = parse_json(path);
     assert_eq!(result.is_err(), true)
 }
 
 #[test]
 fn test_step2_valid() {
-    let path = String::from_str("./tests/step1/valid.json").unwrap();
+    let path = String::from("./tests/step1/valid.json");
     let result = parse_json(path);
     assert_eq!(result.is_ok(), true)
 }
 
 #[test]
 fn test_step2_invalid() {
-    let path = String::from_str("./tests/step1/invalid.json").unwrap();
+    let path = String::from("./tests/step1/invalid.json");
     let result = parse_json(path);
     assert_eq!(result.is_err(), true)
 }
 
 #[test]
 fn test_step2_valid1() {
-    let path = String::from_str("./tests/step1/valid2.json").unwrap();
+    let path = String::from("./tests/step1/valid2.json");
     let result = parse_json(path);
     assert_eq!(result.is_ok(), true)
 }
 
 #[test]
 fn test_step2_invalid2() {
-    let path = String::from_str("./tests/step1/invalid2.json").unwrap();
+    let path = String::from("./tests/step1/invalid2.json");
     let result = parse_json(path);
     assert_eq!(result.is_err(), true)
 }
