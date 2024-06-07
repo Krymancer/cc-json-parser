@@ -1,5 +1,5 @@
-use std::{env, fs, process::exit, str::FromStr};
-use anyhow::{Result, Context };
+use anyhow::{Context, Result};
+use std::{env, fs, process::exit, ptr::null_mut, str::FromStr};
 
 #[derive(Debug)]
 pub enum JsonValue {
@@ -32,8 +32,73 @@ fn read_file(path: String) -> Result<String> {
     fs::read_to_string(path).context("Falied to read File")
 }
 
+fn parse_string(chars: &mut std::iter::Peekable<std::str::Chars>) -> String {
+    todo!("Implement parser for string")
+}
+
+fn parse_number(chars: &mut std::iter::Peekable<std::str::Chars>) -> f64 {
+    todo!("Implement parser for number")
+}
+
+fn parse_bool(chars: &mut std::iter::Peekable<std::str::Chars>) -> bool {
+    todo!("Implement parser for bool")
+}
+
+fn parse_null(chars: &mut std::iter::Peekable<std::str::Chars>) {
+    todo!("Implement parser for null")
+}
+
 fn tokenize(input: String) -> Vec<Token> {
-    todo!("Implement tokenization")
+    let mut tokens = Vec::new();
+    let mut chars = input.chars().peekable();
+
+    while let Some(&ch) = chars.peek() {
+        match ch {
+            '{' => {
+                tokens.push(Token::CurlyOpen);
+                chars.next();
+            }
+            '{' => {
+                tokens.push(Token::CurlyClose);
+                chars.next();
+            }
+            '[' => {
+                tokens.push(Token::SquareOpen);
+                chars.next();
+            }
+            ']' => {
+                tokens.push(Token::SquareClose);
+                chars.next();
+            }
+            ':' => {
+                tokens.push(Token::Colon);
+                chars.next();
+            }
+            ',' => {
+                tokens.push(Token::Comma);
+                chars.next();
+            }
+            '"' => {
+                tokens.push(Token::String(parse_string(&mut chars)));
+            }
+            '0'..='9' | '-' => {
+                tokens.push(Token::Number(parse_number(&mut chars)));
+            }
+            't' | 'f' => {
+                tokens.push(Token::Bool(parse_bool(&mut chars)));
+            }
+            'n' => {
+                parse_null(&mut chars);
+                tokens.push(Token::Null);
+            }
+            _ if ch.is_whitespace() => {
+                chars.next();
+            }
+            _ => panic!("Unexpected character: {}", ch),
+        }
+    }
+
+    tokens
 }
 
 fn parse(tokens: Vec<Token>) -> Result<JsonValue> {
