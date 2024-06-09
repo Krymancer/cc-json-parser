@@ -16,6 +16,15 @@ fn main() {
 
     let file_path = file_path.unwrap();
 
-    let parsed = parse_json(file_path);
-    println!("{:#?}", parsed);
+    let result = parse_json(file_path);
+
+    if let Ok(r) = result {
+        println!("PASS \n{:?}", r);
+        return;
+    }
+
+    if let Err(e) = result {
+        println!("FAIL \n{:?}", e.to_string());
+        return;
+    }
 }

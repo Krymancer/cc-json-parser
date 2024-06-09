@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Context, Result};
 use std::fs;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum JsonValue {
     Object(Vec<(String, JsonValue)>),
     Array(Vec<JsonValue>),
@@ -52,12 +52,12 @@ fn tokenize_string(chars: &mut std::iter::Peekable<std::str::Chars>) -> String {
     result
 }
 
-fn tokenize_number(chars: &mut std::iter::Peekable<std::str::Chars>) -> f64 {
+fn tokenize_number(chars: &mut std::iter::Peekable<std::str::Chars>) -> Result<f64> {
     let mut result = String::new();
 
     while let Some(&ch) = chars.peek() {
         match ch {
-            '0'..='9' | '.' | '-' => {
+            '0'..='9' | '.' | '-' | '+' | 'e' | 'E' => {
                 result.push(ch);
                 chars.next();
             }
@@ -65,7 +65,13 @@ fn tokenize_number(chars: &mut std::iter::Peekable<std::str::Chars>) -> f64 {
         }
     }
 
-    result.parse().unwrap() // Assuming valid number input
+    if let Some(ch) = result.chars().last() {
+        if matches!(ch, 'e' | 'E' | '.' | '-' | '+') {
+            return Err(anyhow!("Invalid number"));
+        }
+    }
+
+    Ok(result.to_lowercase().parse().unwrap()) // Assuming valid number input
 }
 
 fn tokenize_bool(chars: &mut std::iter::Peekable<std::str::Chars>) -> bool {
@@ -101,6 +107,10 @@ fn tokenize_null(chars: &mut std::iter::Peekable<std::str::Chars>) {
 }
 
 fn tokenize(input: String) -> Result<Vec<Token>> {
+    if input.is_empty() {
+        return Err(anyhow!("Empty file"));
+    }
+
     let mut tokens = Vec::new();
     let mut chars = input.chars().peekable();
 
@@ -134,7 +144,7 @@ fn tokenize(input: String) -> Result<Vec<Token>> {
                 tokens.push(Token::String(tokenize_string(&mut chars)));
             }
             '0'..='9' | '-' => {
-                tokens.push(Token::Number(tokenize_number(&mut chars)));
+                tokens.push(Token::Number(tokenize_number(&mut chars)?));
             }
             't' | 'f' => {
                 tokens.push(Token::Bool(tokenize_bool(&mut chars)));
@@ -155,7 +165,14 @@ fn tokenize(input: String) -> Result<Vec<Token>> {
 
 fn parse_tokens(tokens: Vec<Token>) -> Result<JsonValue> {
     let mut iter = tokens.iter().peekable();
-    parse_value(&mut iter)
+    let value = parse_value(&mut iter)?;
+
+    match value {
+        JsonValue::Object(_) | JsonValue::Array(_) => Ok(value),
+        _ => Err(anyhow!(
+            "A JSON payload should be an object or array, not a string."
+        )),
+    }
 }
 
 fn parse_value<'a, I>(tokens: &mut std::iter::Peekable<I>) -> Result<JsonValue>
@@ -215,6 +232,9 @@ where
                         match tokens.peek() {
                             Some(Token::Comma) => {
                                 tokens.next(); // Consume the ',' (Comma)
+                                if let Some(Token::CurlyClose) = tokens.peek() {
+                                    return Err(anyhow!("Trailing comma in object"));
+                                }
                             }
                             Some(Token::CurlyClose) => {
                                 tokens.next(); // Consume the '}' (Close curly bracket)
@@ -251,7 +271,12 @@ where
                 let value = parse_value(tokens)?;
                 array.push(value);
                 match tokens.peek() {
-                    Some(Token::Comma) => tokens.next(), // Consume the ',' (Comma)
+                    Some(Token::Comma) => {
+                        tokens.next(); // Consume the ',' (Comma)
+                        if let Some(Token::SquareClose) = tokens.peek() {
+                            return Err(anyhow!("Trailing comma in array"));
+                        }
+                    }
                     Some(Token::SquareClose) => {
                         tokens.next(); // Consume the ']' (Clase bracket) end of array
                         break;
