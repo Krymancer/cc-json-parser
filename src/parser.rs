@@ -80,8 +80,8 @@ fn tokenize_string(chars: &mut std::iter::Peekable<std::str::Chars>) -> Result<S
                         '"' => result.push('"'),
                         '\\' => result.push('\\'),
                         '/' => result.push('/'),
-                        'b' => result.push('\u{0008}'),
-                        'f' => result.push('\u{000C}'),
+                        'b' => result.push('\x08'), // Backspace rust don't like \b in char
+                        'f' => result.push('\x0C'), // Form feed rust don't like \f in char
                         'n' => result.push('\n'),
                         'r' => result.push('\r'),
                         't' => result.push('\t'),
