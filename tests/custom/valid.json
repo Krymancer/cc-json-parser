@@ -1,0 +1,32 @@
+{
+  "string": "value",
+  "positive_number": 123.456,
+  "negative_number": -789.123,
+  "boolean_true": true,
+  "boolean_false": false,
+  "null_value": null,
+  "object": {
+    "nested_string": "nested_value",
+    "nested_number": 789,
+    "nested_negative_number": -456,
+    "nested_float": 0.987,
+    "nested_object": {
+      "inner_key": "inner_value"
+    },
+    "nested_array": [1, -2, 3.14, "four", true, null]
+  },
+  "array": [
+    "string_in_array",
+    42,
+    -99,
+    3.1415,
+    false,
+    null,
+    {
+      "array_object_key": "array_object_value"
+    },
+    ["nested_array_in_array", -45.67]
+  ],
+  "empty_object": {},
+  "empty_array": []
+}
