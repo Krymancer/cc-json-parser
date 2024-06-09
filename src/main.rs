@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 use std::{env, fs, process::exit};
 
 #[derive(Debug)]
@@ -32,7 +32,7 @@ fn read_file(path: String) -> Result<String> {
     fs::read_to_string(path).context("Falied to read File")
 }
 
-fn parse_string(chars: &mut std::iter::Peekable<std::str::Chars>) -> String {
+fn tokenize_string(chars: &mut std::iter::Peekable<std::str::Chars>) -> String {
     let mut result = String::new();
     chars.next(); // Skip opening (") quote
 
@@ -52,7 +52,7 @@ fn parse_string(chars: &mut std::iter::Peekable<std::str::Chars>) -> String {
     result
 }
 
-fn parse_number(chars: &mut std::iter::Peekable<std::str::Chars>) -> f64 {
+fn tokenize_number(chars: &mut std::iter::Peekable<std::str::Chars>) -> f64 {
     let mut result = String::new();
 
     while let Some(&ch) = chars.peek() {
@@ -68,7 +68,7 @@ fn parse_number(chars: &mut std::iter::Peekable<std::str::Chars>) -> f64 {
     result.parse().unwrap() // Assuming valid number input
 }
 
-fn parse_bool(chars: &mut std::iter::Peekable<std::str::Chars>) -> bool {
+fn tokenize_bool(chars: &mut std::iter::Peekable<std::str::Chars>) -> bool {
     let mut result = String::new();
 
     while let Some(&ch) = chars.peek() {
@@ -84,7 +84,7 @@ fn parse_bool(chars: &mut std::iter::Peekable<std::str::Chars>) -> bool {
     result == "true"
 }
 
-fn parse_null(chars: &mut std::iter::Peekable<std::str::Chars>) {
+fn tokenize_null(chars: &mut std::iter::Peekable<std::str::Chars>) {
     let mut result = String::new();
 
     while let Some(&ch) = chars.peek() {
@@ -131,16 +131,16 @@ fn tokenize(input: String) -> Vec<Token> {
                 chars.next();
             }
             '"' => {
-                tokens.push(Token::String(parse_string(&mut chars)));
+                tokens.push(Token::String(tokenize_string(&mut chars)));
             }
             '0'..='9' | '-' => {
-                tokens.push(Token::Number(parse_number(&mut chars)));
+                tokens.push(Token::Number(tokenize_number(&mut chars)));
             }
             't' | 'f' => {
-                tokens.push(Token::Bool(parse_bool(&mut chars)));
+                tokens.push(Token::Bool(tokenize_bool(&mut chars)));
             }
             'n' => {
-                parse_null(&mut chars);
+                tokenize_null(&mut chars);
                 tokens.push(Token::Null);
             }
             _ if ch.is_whitespace() => {
@@ -153,15 +153,72 @@ fn tokenize(input: String) -> Vec<Token> {
     tokens
 }
 
-fn parse(tokens: Vec<Token>) -> Result<JsonValue> {
-    todo!("Implement parsing")
+fn parse_tokens(tokens: Vec<Token>) -> Result<JsonValue> {
+    let mut iter = tokens.iter().peekable();
+    parse_value(&mut iter)
+}
+
+fn parse_value<'a, I>(tokens: &mut std::iter::Peekable<I>) -> Result<JsonValue>
+where
+    I: Iterator<Item = &'a Token>,
+{
+    match tokens.peek() {
+        Some(Token::CurlyOpen) => parse_object(tokens),
+        Some(Token::SquareOpen) => parse_array(tokens),
+        Some(Token::String(_)) => {
+            if let Some(Token::String(s)) = tokens.next() {
+                Ok(JsonValue::String(s.clone()))
+            } else {
+                Err(anyhow!("Expected a string"))
+            }
+        }
+        Some(Token::Number(_)) => {
+            if let Some(Token::Number(n)) = tokens.next() {
+                Ok(JsonValue::Number(*n))
+            } else {
+                Err(anyhow!("Expected a number"))
+            }
+        }
+        Some(Token::Bool(_)) => {
+            if let Some(Token::Bool(b)) = tokens.next() {
+                Ok(JsonValue::Bool(*b))
+            } else {
+                Err(anyhow!("Expected a boolean"))
+            }
+        }
+        Some(Token::Null) => {
+            tokens.next(); // Consume the Null token
+            Ok(JsonValue::Null)
+        }
+        _ => Err(anyhow!("Unexpected token")),
+    }
+}
+
+fn parse_object<'a, I>(tokens: &mut std::iter::Peekable<I>) -> Result<JsonValue>
+where
+    I: Iterator<Item = &'a Token>,
+{
+    let mut object = Vec::new();
+    tokens.next(); // Consume the '{' (Open curly bracket)
+
+    todo!("Implement object parsing")
+}
+
+fn parse_array<'a, I>(tokens: &mut std::iter::Peekable<I>) -> Result<JsonValue>
+where
+    I: Iterator<Item = &'a Token>,
+{
+    let mut array = Vec::new();
+    tokens.next(); // Consume the '[' (Open bracket)
+
+    todo!("Implement array parsing")
 }
 
 pub fn parse_json(path: String) -> Result<JsonValue> {
     let input = read_file(path)?;
     let tokens = tokenize(input);
     println!("{:?}", tokens);
-    parse(tokens).context("Falied to parse JSON")
+    parse_tokens(tokens)
 }
 
 fn main() {
