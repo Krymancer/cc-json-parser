@@ -18,7 +18,7 @@
         "space": " ",
         "quote": "\"",
         "backslash": "\\",
-        "controls": "\b\f\n\r\t",
+        "xontrols": "\b\f\n\r\t",
         "slash": "/ & \/",
         "alpha": "abcdefghijklmnopqrstuvwyz",
         "ALPHA": "ABCDEFGHIJKLMNOPQRSTUVWYZ",

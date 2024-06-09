@@ -32,15 +32,73 @@ fn read_file(path: String) -> Result<String> {
     fs::read_to_string(path).context("Falied to read File")
 }
 
-fn tokenize_string(chars: &mut std::iter::Peekable<std::str::Chars>) -> String {
+fn tokenize_unicode_sequence(chars: &mut std::iter::Peekable<std::str::Chars>) -> Result<String> {
+    let mut result = String::new();
+
+    chars.next(); // Skip 'u'
+    let mut unicode_sequence = String::new();
+    for _ in 0..4 {
+        if let Some(&hex_digit) = chars.peek() {
+            if hex_digit.is_ascii_hexdigit() {
+                unicode_sequence.push(hex_digit);
+                chars.next();
+            } else {
+                return Err(anyhow!("Invalid Unicode escape sequence"));
+            }
+        } else {
+            return Err(anyhow!(
+                "Unexpected end of input in Unicode escape sequence"
+            ));
+        }
+    }
+
+    if let Ok(unicode_char) =
+        u16::from_str_radix(&unicode_sequence, 16).map(|u| char::from_u32(u as u32))
+    {
+        if let Some(c) = unicode_char {
+            result.push(c);
+        } else {
+            return Err(anyhow!("Invalid Unicode character"));
+        }
+    } else {
+        return Err(anyhow!("Invalid Unicode escape sequence"));
+    }
+
+    Ok(result)
+}
+
+fn tokenize_string(chars: &mut std::iter::Peekable<std::str::Chars>) -> Result<String> {
     let mut result = String::new();
     chars.next(); // Skip opening (") quote
 
     while let Some(&ch) = chars.peek() {
         match ch {
+            '\\' => {
+                chars.next(); // Skip the backslash
+                if let Some(&escaped_char) = chars.peek() {
+                    match escaped_char {
+                        '"' => result.push('"'),
+                        '\\' => result.push('\\'),
+                        '/' => result.push('/'),
+                        'b' => result.push('\u{0008}'),
+                        'f' => result.push('\u{000C}'),
+                        'n' => result.push('\n'),
+                        'r' => result.push('\r'),
+                        't' => result.push('\t'),
+                        'u' => {
+                            let unicode_sequence = tokenize_unicode_sequence(chars)?;
+                            result += &unicode_sequence;
+                        }
+                        _ => return Err(anyhow!("Invalid escape sequence: \\{}", escaped_char)),
+                    }
+                    chars.next(); // Skip the escaped character
+                } else {
+                    return Err(anyhow!("Unexpected end of input after escape character"));
+                }
+            }
             '"' => {
                 chars.next(); // Skip closing (") quote
-                break;
+                break; // Closing quote found
             }
             _ => {
                 result.push(ch);
@@ -49,7 +107,7 @@ fn tokenize_string(chars: &mut std::iter::Peekable<std::str::Chars>) -> String {
         }
     }
 
-    result
+    Ok(result)
 }
 
 fn tokenize_number(chars: &mut std::iter::Peekable<std::str::Chars>) -> Result<f64> {
@@ -141,7 +199,7 @@ fn tokenize(input: String) -> Result<Vec<Token>> {
                 chars.next();
             }
             '"' => {
-                tokens.push(Token::String(tokenize_string(&mut chars)));
+                tokens.push(Token::String(tokenize_string(&mut chars)?));
             }
             '0'..='9' | '-' => {
                 tokens.push(Token::Number(tokenize_number(&mut chars)?));
