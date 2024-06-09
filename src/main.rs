@@ -201,7 +201,37 @@ where
     let mut object = Vec::new();
     tokens.next(); // Consume the '{' (Open curly bracket)
 
-    todo!("Implement object parsing")
+    loop {
+        match tokens.peek() {
+            Some(Token::CurlyClose) => {
+                tokens.next(); // Consume the '}' (Close curly bracket)
+                break;
+            }
+            Some(Token::String(_)) => {
+                if let Some(Token::String(key)) = tokens.next() {
+                    if let Some(Token::Colon) = tokens.next() {
+                        let value = parse_value(tokens)?;
+                        object.push((key.clone(), value));
+                        match tokens.peek() {
+                            Some(Token::Comma) => {
+                                tokens.next(); // Consume the ',' (Comma)
+                            }
+                            Some(Token::CurlyClose) => {
+                                tokens.next(); // Consume the '}' (Close curly bracket)
+                                break;
+                            }
+                            _ => return Err(anyhow!("Expected ',' or '}}'")),
+                        }
+                    }
+                } else {
+                    return Err(anyhow!("Expected ':'"));
+                }
+            }
+            _ => return Err(anyhow!("Expected string key or '}}'")),
+        }
+    }
+
+    Ok(JsonValue::Object(object))
 }
 
 fn parse_array<'a, I>(tokens: &mut std::iter::Peekable<I>) -> Result<JsonValue>
@@ -211,7 +241,29 @@ where
     let mut array = Vec::new();
     tokens.next(); // Consume the '[' (Open bracket)
 
-    todo!("Implement array parsing")
+    loop {
+        match tokens.peek() {
+            Some(Token::SquareClose) => {
+                tokens.next(); // Consume the ']' (Close bracket) end of array
+                break;
+            }
+            Some(_) => {
+                let value = parse_value(tokens)?;
+                array.push(value);
+                match tokens.peek() {
+                    Some(Token::Comma) => tokens.next(), // Consume the ',' (Comma)
+                    Some(Token::SquareClose) => {
+                        tokens.next(); // Consume the ']' (Clase bracket) end of array
+                        break;
+                    }
+                    _ => return Err(anyhow!("Expected ',' or ']'")),
+                };
+            }
+            _ => return Err(anyhow!("Expected value or ]")),
+        };
+    }
+
+    Ok(JsonValue::Array(array))
 }
 
 pub fn parse_json(path: String) -> Result<JsonValue> {
