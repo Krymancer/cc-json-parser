@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Context, Result};
 use std::fs;
 
-const MAX_DEPTH: usize = 20; // Got this from fail18.json from json.org test suite for json parser
+const MAX_DEPTH: usize = 19; // Got this from fail18.json from json.org test suite for json parser
 
 #[derive(Debug, PartialEq)]
 pub enum JsonValue {
@@ -302,8 +302,8 @@ where
     }
 
     match tokens.peek() {
-        Some(Token::CurlyOpen) => parse_object(tokens, depth + 1),
-        Some(Token::SquareOpen) => parse_array(tokens, depth + 1),
+        Some(Token::CurlyOpen) => parse_object(tokens, depth),
+        Some(Token::SquareOpen) => parse_array(tokens, depth),
         Some(Token::String(_)) => {
             if let Some(Token::String(s)) = tokens.next() {
                 Ok(JsonValue::String(s.clone()))
