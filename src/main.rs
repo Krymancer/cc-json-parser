@@ -19,11 +19,11 @@ fn main() {
     let result = parse_json(file_path);
 
     if let Ok(r) = result {
-        println!("PASS \n{:?}", r);
+        println!("PASS\n{:?}", r);
         return;
     }
 
     if let Err(e) = result {
-        println!("FAIL \n{:?}", e.to_string());
+        println!("FAIL\n{:?}", e.to_string());
     }
 }

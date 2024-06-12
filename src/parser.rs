@@ -1,6 +1,8 @@
 use anyhow::{anyhow, Context, Result};
 use std::fs;
 
+const MAX_DEPTH: usize = 20; // Got this from fail18.json from json.org test suite for json parser
+
 #[derive(Debug, PartialEq)]
 pub enum JsonValue {
     Object(Vec<(String, JsonValue)>),
@@ -110,17 +112,67 @@ fn tokenize_string(chars: &mut std::iter::Peekable<std::str::Chars>) -> Result<S
     Ok(result)
 }
 
-fn tokenize_number(chars: &mut std::iter::Peekable<std::str::Chars>) -> Result<f64> {
+fn tokenize_number(chars: &mut std::iter::Peekable<std::str::Chars>) -> Result<f64, anyhow::Error> {
     let mut result = String::new();
+    let mut is_first_char = true;
+    let mut has_dot = false;
 
     while let Some(&ch) = chars.peek() {
         match ch {
-            '0'..='9' | '.' | '-' | '+' | 'e' | 'E' => {
+            '0'..='9' => {
+                if is_first_char && ch == '0' {
+                    chars.next(); // Consume the '0'
+                    if let Some(&next_ch) = chars.peek() {
+                        match next_ch {
+                            '.' => {
+                                // Handle 0.x numbers
+                                result.push('0');
+                            }
+                            '0'..='9' => return Err(anyhow!("Invalid number with leading zero")),
+                            _ => {
+                                result.push('0'); // Just 0
+                                break;
+                            }
+                        }
+                    } else {
+                        result.push('0'); // Just 0
+                        break;
+                    }
+                } else {
+                    result.push(ch);
+                    chars.next();
+                }
+            }
+            '.' => {
+                if has_dot {
+                    return Err(anyhow!("Multiple decimal points in number"));
+                }
+                result.push(ch);
+                chars.next();
+                has_dot = true;
+            }
+            '-' | '+' if is_first_char => {
                 result.push(ch);
                 chars.next();
             }
+            'e' | 'E' => {
+                result.push(ch);
+                chars.next();
+                // After 'e' or 'E', we should expect a digit or a sign
+                if let Some(&next_ch) = chars.peek() {
+                    if next_ch == '-' || next_ch == '+' || next_ch.is_digit(10) {
+                        result.push(next_ch);
+                        chars.next();
+                    } else {
+                        return Err(anyhow!("Invalid character after exponent"));
+                    }
+                } else {
+                    return Err(anyhow!("Exponent without digits"));
+                }
+            }
             _ => break,
         }
+        is_first_char = false;
     }
 
     if let Some(ch) = result.chars().last() {
@@ -129,7 +181,10 @@ fn tokenize_number(chars: &mut std::iter::Peekable<std::str::Chars>) -> Result<f
         }
     }
 
-    Ok(result.to_lowercase().parse().unwrap()) // Assuming valid number input
+    match result.to_lowercase().parse() {
+        Ok(number) => Ok(number),
+        Err(..) => Err(anyhow!("Number is invalid")),
+    }
 }
 
 fn tokenize_bool(chars: &mut std::iter::Peekable<std::str::Chars>) -> bool {
@@ -223,7 +278,12 @@ fn tokenize(input: String) -> Result<Vec<Token>> {
 
 fn parse_tokens(tokens: Vec<Token>) -> Result<JsonValue> {
     let mut iter = tokens.iter().peekable();
-    let value = parse_value(&mut iter)?;
+    let value = parse_value(&mut iter, 0)?;
+
+    // Check if there are any remaining tokens after the top-level value
+    if iter.peek().is_some() {
+        return Err(anyhow!("Extra tokens after top-level value"));
+    }
 
     match value {
         JsonValue::Object(_) | JsonValue::Array(_) => Ok(value),
@@ -233,13 +293,17 @@ fn parse_tokens(tokens: Vec<Token>) -> Result<JsonValue> {
     }
 }
 
-fn parse_value<'a, I>(tokens: &mut std::iter::Peekable<I>) -> Result<JsonValue>
+fn parse_value<'a, I>(tokens: &mut std::iter::Peekable<I>, depth: usize) -> Result<JsonValue>
 where
     I: Iterator<Item = &'a Token>,
 {
+    if depth > MAX_DEPTH {
+        return Err(anyhow!("Exceeded maximum nesting depth"));
+    }
+
     match tokens.peek() {
-        Some(Token::CurlyOpen) => parse_object(tokens),
-        Some(Token::SquareOpen) => parse_array(tokens),
+        Some(Token::CurlyOpen) => parse_object(tokens, depth + 1),
+        Some(Token::SquareOpen) => parse_array(tokens, depth + 1),
         Some(Token::String(_)) => {
             if let Some(Token::String(s)) = tokens.next() {
                 Ok(JsonValue::String(s.clone()))
@@ -269,7 +333,7 @@ where
     }
 }
 
-fn parse_object<'a, I>(tokens: &mut std::iter::Peekable<I>) -> Result<JsonValue>
+fn parse_object<'a, I>(tokens: &mut std::iter::Peekable<I>, depth: usize) -> Result<JsonValue>
 where
     I: Iterator<Item = &'a Token>,
 {
@@ -285,7 +349,7 @@ where
             Some(Token::String(_)) => {
                 if let Some(Token::String(key)) = tokens.next() {
                     if let Some(Token::Colon) = tokens.next() {
-                        let value = parse_value(tokens)?;
+                        let value = parse_value(tokens, depth + 1)?;
                         object.push((key.clone(), value));
                         match tokens.peek() {
                             Some(Token::Comma) => {
@@ -312,7 +376,7 @@ where
     Ok(JsonValue::Object(object))
 }
 
-fn parse_array<'a, I>(tokens: &mut std::iter::Peekable<I>) -> Result<JsonValue>
+fn parse_array<'a, I>(tokens: &mut std::iter::Peekable<I>, depth: usize) -> Result<JsonValue>
 where
     I: Iterator<Item = &'a Token>,
 {
@@ -326,7 +390,7 @@ where
                 break;
             }
             Some(_) => {
-                let value = parse_value(tokens)?;
+                let value = parse_value(tokens, depth + 1)?;
                 array.push(value);
                 match tokens.peek() {
                     Some(Token::Comma) => {
