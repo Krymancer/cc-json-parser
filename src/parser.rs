@@ -343,7 +343,7 @@ where
     loop {
         match tokens.peek() {
             Some(Token::CurlyClose) => {
-                tokens.next(); // Consume the '}' (Close curly bracket)
+                tokens.next(); // Consume the '}'
                 break;
             }
             Some(Token::String(_)) => {
@@ -353,23 +353,23 @@ where
                         object.push((key.clone(), value));
                         match tokens.peek() {
                             Some(Token::Comma) => {
-                                tokens.next(); // Consume the ',' (Comma)
+                                tokens.next(); // Consume the ','
                                 if let Some(Token::CurlyClose) = tokens.peek() {
                                     return Err(anyhow!("Trailing comma in object"));
                                 }
                             }
                             Some(Token::CurlyClose) => {
-                                tokens.next(); // Consume the '}' (Close curly bracket)
+                                tokens.next(); // Consume the '}'
                                 break;
                             }
-                            _ => return Err(anyhow!("Expected ',' or '}}'")),
+                            _ => return Err(anyhow!("Expected ',' or '}}' after object value")),
                         }
+                    } else {
+                        return Err(anyhow!("Expected ':' after key in object"));
                     }
-                } else {
-                    return Err(anyhow!("Expected ':'"));
                 }
             }
-            _ => return Err(anyhow!("Expected string key or '}}'")),
+            _ => return Err(anyhow!("Expected string key or '}}' in object")),
         }
     }
 
