@@ -228,4 +228,256 @@ mod tests {
             ])
         );
     }
+
+    #[test]
+    fn test_json_org_fail_1() {
+        let path = String::from("./tests/json_org_tests/fail1.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_10() {
+        let path = String::from("./tests/json_org_tests/fail10.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_11() {
+        let path = String::from("./tests/json_org_tests/fail11.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_12() {
+        let path = String::from("./tests/json_org_tests/fail12.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_13() {
+        let path = String::from("./tests/json_org_tests/fail13.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_14() {
+        let path = String::from("./tests/json_org_tests/fail14.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_15() {
+        let path = String::from("./tests/json_org_tests/fail15.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_16() {
+        let path = String::from("./tests/json_org_tests/fail16.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_17() {
+        let path = String::from("./tests/json_org_tests/fail17.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_18() {
+        let path = String::from("./tests/json_org_tests/fail18.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_19() {
+        let path = String::from("./tests/json_org_tests/fail19.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_2() {
+        let path = String::from("./tests/json_org_tests/fail2.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_20() {
+        let path = String::from("./tests/json_org_tests/fail20.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_21() {
+        let path = String::from("./tests/json_org_tests/fail21.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_22() {
+        let path = String::from("./tests/json_org_tests/fail22.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_23() {
+        let path = String::from("./tests/json_org_tests/fail23.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_24() {
+        let path = String::from("./tests/json_org_tests/fail24.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_25() {
+        let path = String::from("./tests/json_org_tests/fail25.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_26() {
+        let path = String::from("./tests/json_org_tests/fail26.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_27() {
+        let path = String::from("./tests/json_org_tests/fail27.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_28() {
+        let path = String::from("./tests/json_org_tests/fail28.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_29() {
+        let path = String::from("./tests/json_org_tests/fail29.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_3() {
+        let path = String::from("./tests/json_org_tests/fail3.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_30() {
+        let path = String::from("./tests/json_org_tests/fail30.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_31() {
+        let path = String::from("./tests/json_org_tests/fail31.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_32() {
+        let path = String::from("./tests/json_org_tests/fail32.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_33() {
+        let path = String::from("./tests/json_org_tests/fail33.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_4() {
+        let path = String::from("./tests/json_org_tests/fail4.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_5() {
+        let path = String::from("./tests/json_org_tests/fail5.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_6() {
+        let path = String::from("./tests/json_org_tests/fail6.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_7() {
+        let path = String::from("./tests/json_org_tests/fail7.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_8() {
+        let path = String::from("./tests/json_org_tests/fail8.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_fail_9() {
+        let path = String::from("./tests/json_org_tests/fail9.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[test]
+    fn test_json_org_pass_1() {
+        let path = String::from("./tests/json_org_tests/pass1.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), false);
+    }
+
+    #[test]
+    fn test_json_org_pass_2() {
+        let path = String::from("./tests/json_org_tests/pass2.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), false);
+    }
+
+    #[test]
+    fn test_json_org_pass_3() {
+        let path = String::from("./tests/json_org_tests/pass3.json");
+        let result = parse_json(path);
+        assert_eq!(result.is_err(), false);
+    }
 }

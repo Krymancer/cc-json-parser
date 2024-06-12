@@ -102,6 +102,12 @@ fn tokenize_string(chars: &mut std::iter::Peekable<std::str::Chars>) -> Result<S
                 chars.next(); // Skip closing (") quote
                 break; // Closing quote found
             }
+            _ if ch.is_whitespace() && ch != ' ' => {
+                return Err(anyhow!(
+                    "Invalid unescaped whitespace character in string: {}",
+                    ch
+                ));
+            }
             _ => {
                 result.push(ch);
                 chars.next();
